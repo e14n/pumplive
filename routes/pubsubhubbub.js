@@ -169,7 +169,7 @@ var deliverPayload = function(activity, log) {
 var updateActivityCount = function(activity, log, callback) {
     var now = new Date(),
         bank = Host.bank(),
-        key = [now.getUTCFullYear(), (now.getUTCMonth()+1), now.getUTCDate(), now.getUTCHour()].join("_");
+        key = [now.getUTCFullYear(), (now.getUTCMonth()+1), now.getUTCDate(), now.getUTCHours()].join("_");
 
     bank.incr("hourlyactivitycount", key, function(err) {
         callback(err);
