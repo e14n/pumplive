@@ -20,6 +20,6 @@
   <div class="span4">
   <h2>Activities per second</h2>
 
-  <p><%- activityRate.toFixed(2) %></p>
+  <p><%- activityRate.toFixed(4) %></p>
   </div>
 </div>
