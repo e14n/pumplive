@@ -1,6 +1,6 @@
 {
-    "name": "openfarmgame",
-    "version": "0.1.0-alpha.1",
+    "name": "pumplive",
+    "version": "0.2.0-alpha.1",
     "dependencies": {
         "express": "2.5.x",
         "utml": "0.2.x",
