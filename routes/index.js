@@ -29,6 +29,49 @@ var S = 1000;
 var M = 60 * S;
 var H = 60 * M;
 
+var softRead = function(bank, type, key, def, callback) {
+    bank.read(type, key, function(err, result) {
+        if (err && err.name == "NoSuchThingError") {
+            callback(null, def);
+        } else if (err) {
+            callback(err, null);
+        } else {
+            callback(null, result);
+        }
+    });
+};
+
+var getStats = function(callback) {
+
+    var bank = Host.bank();
+
+    async.parallel([
+        function(callback) {
+            softRead(bank, "hosttotal", 0, 0, callback);
+        },
+        function(callback) {
+            softRead(bank, "lasttotalcount", 0, {count: 0}, callback);
+        },
+        function(callback) {
+            var then = new Date(Date.now() - 1*H),
+                key = [then.getUTCFullYear(), (then.getUTCMonth()+1), then.getUTCDate(), then.getUTCHours()].join("_");
+
+            softRead(bank, "activityrate", key, 0, callback);
+        }
+    ], function(err, results) {
+        if (err) {
+            callback(err, null);
+        } else {
+            callback(null, {
+                hosts: results[0],
+                users: results[1].count,
+                activityRate: results[2]
+            });
+        }
+    });
+
+};
+
 exports.hostmeta = function(req, res) {
     res.json({
         links: [
@@ -41,52 +84,18 @@ exports.hostmeta = function(req, res) {
 };
 
 exports.index = function(req, res, next) {
-    var hosts,
-        users,
-        activityRate,
-        bank = Host.bank();
 
     async.waterfall([
         function(callback) {
-            bank.read("hosttotal", 0, callback);
-        },
-        function(hc, callback) {
-            hosts = hc;
-            bank.read("lasttotalcount", 0, function(err, ltc) {
-                if (err && err.name == "NoSuchThingError") {
-                    users = 0;
-                    callback(null);
-                } else if (err) {
-                    callback(err);
-                } else {
-                    users = ltc.count;
-                    callback(null);
-                }
-            });
-        },
-        function(callback) {
-            var then = new Date(Date.now() - 1*H),
-                key = [then.getUTCFullYear(), (then.getUTCMonth()+1), then.getUTCDate(), then.getUTCHours()].join("_");
-
-            bank.read("activityrate", key, function(err, rate) {
-                if (err && err.name == "NoSuchThingError") {
-                    activityRate = 0;
-                    callback(null);
-                } else if (err) {
-                    callback(err);
-                } else {
-                    activityRate = rate;
-                    callback(null);
-                }
-            });
+            getStats(callback);
         }
-    ], function(err) {
+    ], function(err, stats) {
         if (err) {
             next(err);
         } else if (req.user) {
-            res.render('userindex', { title: "Pump Live", user: req.user, users: users, hosts: hosts, activityRate: activityRate });
+            res.render('userindex', { title: "Pump Live", user: req.user, users: stats.users, hosts: stats.hosts, activityRate: stats.activityRate });
         } else {
-            res.render('index', { title: "Pump Live", users: users, hosts: hosts, activityRate: activityRate });
+            res.render('index', { title: "Pump Live", users: stats.users, hosts: stats.hosts, activityRate: stats.activityRate });
         }
     });
 };
