@@ -149,10 +149,39 @@ var hmacSig = function(message, secret) {
 };
 
 var deliverPayload = function(activity, log) {
+    
+    async.parallel([
+        function(callback) {
+            ensureActivityHost(activity, log, callback);
+        },
+        function(callback) {
+            updateActivityCount(activity, log, callback);
+        }
+    ], function(err) {
+        if (err) {
+            log.error(err);
+        } else {
+            log.info({activity: activity.id}, "Successfully handled activity.");
+        }
+    });
+};
+
+var updateActivityCount = function(activity, log, callback) {
+    var now = new Date(),
+        bank = Host.bank(),
+        key = [now.getUTCFullYear(), (now.getUTCMonth()+1), now.getUTCDate(), now.getUTCHour()].join("_");
+
+    bank.incr("hourlyactivitycount", key, function(err) {
+        callback(err);
+    });
+};
+
+var ensureActivityHost = function(activity, log, callback) {
 
     var parsed;
 
     if (!activity.actor || !activity.actor.url) {
+        callback(null);
         return;
     }
 
@@ -161,11 +190,7 @@ var deliverPayload = function(activity, log) {
     parsed = urlparse(activity.actor.url);
 
     Host.ensureHost(parsed.hostname, function(err, host) {
-        if (err) {
-            log.error(err);
-        } else {
-            log.info({activity: activity.id}, "Successfully handled activity.");
-        }
+        callback(err);
     });
 };
 
