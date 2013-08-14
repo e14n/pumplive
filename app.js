@@ -106,6 +106,8 @@ _.extend(config.params.schema, User.schema);
 _.extend(config.params.schema, HostCount.schema);
 _.extend(config.params.schema, TotalCount.schema);
 
+_.extend(config.params.schema, {"hourlyactivitycount": {pkey: "year_month_day_hour"}});
+
 var db = Databank.get(config.driver, config.params);
 
 // We overwrite the default JSON parser to store the raw body to allow checking the 
