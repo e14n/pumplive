@@ -270,6 +270,7 @@ async.waterfall([
         app.get('/authorized/:hostname', routes.authorized);
         app.get('/.well-known/host-meta.json', routes.hostmeta);
         app.post('/callback', pushroutes.subCallback);
+        app.get('/stats.json', routes.stats);
 
         // Create a dialback client
 

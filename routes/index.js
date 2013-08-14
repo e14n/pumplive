@@ -100,6 +100,21 @@ exports.index = function(req, res, next) {
     });
 };
 
+exports.stats = function(req, res, next) {
+
+    async.waterfall([
+        function(callback) {
+            getStats(callback);
+        }
+    ], function(err, stats) {
+        if (err) {
+            next(err);
+        } else {
+            res.json(stats);
+        }
+    });
+};
+
 exports.about = function(req, res) {
     res.render('about', { title: 'About Pump Live' });
 };
