@@ -2,5 +2,8 @@
 data about hosts and users from several sources and keeps historical
 track of important numbers and figures and so on.</p>
 
+<h2>Data feed</h2>
 
-
+<p>There's a JSON feed of the data
+at <a href="http://pumplive.com/stats.json">http://pumplive.com/stats.json</a>
+if that's interesting to you.</p>
