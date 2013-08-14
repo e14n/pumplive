@@ -25,6 +25,10 @@ var wf = require("webfinger"),
     RequestToken = require("../models/requesttoken"),
     PumpLive = require("../models/pumplive");
 
+var S = 1000;
+var M = 60 * S;
+var H = 60 * M;
+
 exports.hostmeta = function(req, res) {
     res.json({
         links: [
@@ -37,7 +41,10 @@ exports.hostmeta = function(req, res) {
 };
 
 exports.index = function(req, res, next) {
-    var hosts, users, bank = Host.bank();
+    var hosts,
+        users,
+        activityRate,
+        bank = Host.bank();
 
     async.waterfall([
         function(callback) {
@@ -56,14 +63,30 @@ exports.index = function(req, res, next) {
                     callback(null);
                 }
             });
+        },
+        function(callback) {
+            var then = new Date(Date.now() - 1*H),
+                key = [then.getUTCFullYear(), (then.getUTCMonth()+1), then.getUTCDate(), then.getUTCHours()].join("_");
+
+            bank.read("activityrate", key, function(err, rate) {
+                if (err && err.name == "NoSuchThingError") {
+                    activityRate = 0;
+                    callback(null);
+                } else if (err) {
+                    callback(err);
+                } else {
+                    activityRate = rate;
+                    callback(null);
+                }
+            });
         }
     ], function(err) {
         if (err) {
             next(err);
         } else if (req.user) {
-            res.render('userindex', { title: "Pump Live", user: req.user, users: users, hosts: hosts });
+            res.render('userindex', { title: "Pump Live", user: req.user, users: users, hosts: hosts, activityRate: activityRate });
         } else {
-            res.render('index', { title: "Pump Live", users: users, hosts: hosts });
+            res.render('index', { title: "Pump Live", users: users, hosts: hosts, activityRate: activityRate });
         }
     });
 };

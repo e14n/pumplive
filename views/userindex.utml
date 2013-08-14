@@ -17,4 +17,9 @@
 
   <p><%- users %></p>
   </div>
+  <div class="span4">
+  <h2>Activities per second</h2>
+
+  <p><%- activityRate.toFixed(2) %></p>
+  </div>
 </div>

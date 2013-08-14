@@ -107,6 +107,7 @@ _.extend(config.params.schema, HostCount.schema);
 _.extend(config.params.schema, TotalCount.schema);
 
 _.extend(config.params.schema, {"hourlyactivitycount": {pkey: "year_month_day_hour"}});
+_.extend(config.params.schema, {"activityrate": {pkey: "year_month_day_hour"}});
 
 var db = Databank.get(config.driver, config.params);
 
