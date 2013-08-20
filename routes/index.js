@@ -59,14 +59,17 @@ var getStats = function(callback) {
             softRead(bank, "activityrate", key, 0, callback);
         }
     ], function(err, results) {
+        var stats;
         if (err) {
             callback(err, null);
         } else {
-            callback(null, {
+            stats = {
                 hosts: results[0],
                 users: results[1].count,
                 activityRate: results[2]
-            });
+            };
+            stats.meanTimeBetweenActivities = (stats.activityRate === 0) ? Number.POSITIVE_INFINITY : (1.0 / stats.activityRate);
+            callback(null, stats);
         }
     });
 
@@ -110,7 +113,6 @@ exports.stats = function(req, res, next) {
         if (err) {
             next(err);
         } else {
-            stats.meanTimeBetweenActivities = (stats.activityRate === 0) ? Number.POSITIVE_INFINITY : (1.0 / stats.activityRate);
             res.json(stats);
         }
     });
