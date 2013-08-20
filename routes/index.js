@@ -110,6 +110,7 @@ exports.stats = function(req, res, next) {
         if (err) {
             next(err);
         } else {
+            stats.meanTimeBetweenActivities = (stats.activityRate === 0) ? Number.POSITIVE_INFINITY : (1.0 / stats.activityRate);
             res.json(stats);
         }
     });
